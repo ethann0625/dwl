@@ -159,7 +159,7 @@ typedef struct {
 #endif
 	unsigned int bw;
 	uint32_t tags;
-	int isfloating, isurgent, isfullscreen;
+	int isfloating, isurgent, isfullscreen, isfakefullscreen;
 
 	/* Animation */
 	struct wlr_box anim_from, anim_to, anim_cur;
@@ -357,6 +357,7 @@ static void setcursor(struct wl_listener *listener, void *data);
 static void setcursorshape(struct wl_listener *listener, void *data);
 static void setfloating(Client *c, int floating);
 static void setfullscreen(Client *c, int fullscreen);
+static void setfakefullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setmon(Client *c, Monitor *m, uint32_t newtags);
@@ -370,6 +371,7 @@ static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
 static void togglefloating(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
+static void togglefakefullscreen(const Arg *arg);
 static void togglegaps(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
@@ -2204,6 +2206,17 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
 }
 
 void
+setfakefullscreen(Client *c, int fullscreen)
+{
+	c->isfakefullscreen = fullscreen;
+	if (!c->mon)
+		return;
+	if (c->isfullscreen)
+		setfullscreen(c, 0);
+	client_set_fullscreen(c, fullscreen);
+}
+
+void
 motionrelative(struct wl_listener *listener, void *data)
 {
 	/* This event is forwarded by the cursor when a pointer emits a _relative_
@@ -3078,6 +3091,14 @@ togglegaps(const Arg *arg)
 {
 	selmon->gaps = !selmon->gaps;
 	arrange(selmon);
+}
+
+void
+togglefakefullscreen(const Arg *arg)
+{
+	Client *sel = focustop(selmon);
+	if (sel)
+		setfakefullscreen(sel, !sel->isfakefullscreen);
 }
 
 void
