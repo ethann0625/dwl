@@ -373,7 +373,7 @@ client_set_size(Client *c, uint32_t width, uint32_t height)
 	if (client_is_x11(c)) {
 		wlr_xwayland_surface_configure(c->surface.xwayland,
 				c->geom.x + c->bw, c->geom.y + c->bw, width, height);
-		return;
+		return 0;
 	}
 #endif
 	if ((int32_t)width == c->surface.xdg->toplevel->current.width
